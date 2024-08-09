@@ -1,5 +1,6 @@
 const sequelize = require('sequelize')
-const banco = require("./banco")
+const banco = require("./banco");
+const { funcionario } = require('./funcionario');
 
 var salario = banco.conexao.define(
     "salario",
@@ -21,4 +22,7 @@ var salario = banco.conexao.define(
     {timestamps: false}
 );
 
-module.exports(salario)
+salario.hasMany(funcionario.funcionario)
+funcionario.funcionario.belongsTo(salario)
+
+module.exports = {salario}

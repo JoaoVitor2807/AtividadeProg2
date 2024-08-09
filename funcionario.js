@@ -1,5 +1,6 @@
 const sequelize = require('sequelize')
 const banco = require("./banco")
+const { salario } = require('./salario');
 
 var funcionario = banco.conexao.define(
     "funcionario",
@@ -17,7 +18,7 @@ var funcionario = banco.conexao.define(
             type:sequelize.INTEGER.UNSIGNED,
         },
         carga_horaria:{
-            type:sequelize.ENUM(20,40)
+            type:sequelize.INTEGER.UNSIGNED
         }
     },
     {timestamps: false}

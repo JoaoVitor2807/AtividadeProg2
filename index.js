@@ -22,36 +22,36 @@ app.listen(PORTA, function(){
     console.log("Servidor iniciado na porta" + PORTA);
 })
 
-app.get("/funcionario/", async function(req,res){
-    const resultado = await funcionario.funcionario.findAll()
+app.get("/salario/", async function(req,res){
+    const resultado = await salario.salario.findAll()
     res.send(resultado)
 })
 
-app.get("/salario/",async function(req, res) {
-    const resultado = await salario.salario.findAll()
+app.get("/funcionario/",async function(req, res) {
+    const funcionario = await funcionario.funcionario.findAll()
     res.send(resultado);
 })
 
-app.get("/funcionario/:id",async function(req, res) {
-    const funcSelecionado = await funcionario.funcionario.findByPk(req.params.id, 
-        { include: { model: salario.salario } } 
+app.get("/salario/:id",async function(req, res) {
+    const salarioSelecionado = await salario.salario.findByPk(req.params.id, 
+        { include: { model: funcionario.funcionario } } 
     )
     console.log("teste")
-    if( timeSelecionado == null ){
-        res.status(404).send({})
-    }else{
-        res.send(funcSelecionado);
-    }
-})
-
-app.get("/salario/:id",async function(req, res) {
-    const salarioSelecionado = await salario.salario.findByPk(req.params.id,
-        { include: {model: funcionario.funcionario } }
-    )
-    if( atletaSelecionado == null ){
+    if( salarioSelecionado == null ){
         res.status(404).send({})
     }else{
         res.send(salarioSelecionado);
+    }
+})
+
+app.get("/funcionario/:id",async function(req, res) {
+    const funcSelecionado = await funcionario.funcionario.findByPk(req.params.id,
+        { include: {model: salario.salario} }
+    )
+    if( funcSelecionado == null ){
+        res.status(404).send({})
+    }else{
+        res.send(funcSelecionado);
     } 
 })
 
@@ -67,9 +67,9 @@ app.get("/salario/funcao/:funcao",async function(req, res) {
     }
 })
 
-app.get("/funcionario/local/:carga_horaria",async function(req, res) {
+app.get("/funcionario/carga_horaria/:carga_horaria",async function(req, res) {
     const funcionariosSelecionados = await funcionario.funcionario.findAll({
-        where: {local:req.params.local}
+        where: {funcao:req.params.carga_horaria}
     }
     )
     if( funcionariosSelecionados == null ){
@@ -79,27 +79,46 @@ app.get("/funcionario/local/:carga_horaria",async function(req, res) {
     }
 })
 
-app.post("/funcionario/",async function(req,res){
-    const resultado = await funcionario.funcionario.create({
-        nome:req.body.nome,
-        idade:req.body.idade,
-        carga_horaria:req.body.carga_horaria
-    })
-    res.send(resultado)
-})
 
 app.post("/salario/",async function(req,res){
     const resultado = await salario.salario.create({
         funcao:req.body.funcao,
-        funcionarioId:req.body.funcionarioId,
         valor:req.body.valor
     })
     res.send(resultado)
 })
 
+app.post("/funcionario/",async function(req,res){
+    const resultado = await funcionario.funcionario.create({
+        nome:req.body.nome,
+        idade:req.body.idade,
+        carga_horaria:req.body.carga_horaria,
+        salarioId:req.body.salarioId
+    })
+    res.send(resultado)
+})
+
+app.put("/salario/:id",async function(req,res){
+    const resultado = await salario.salario.update({
+        funcao:req.body.funcao,
+        valor:req.body.valor
+    },
+    {
+        where:{id: req.params.id}
+    })
+    if( resultado == 0){
+        res.status(404).send({})
+    }else{
+        res.send( await salario.salario.findByPk(req.params.id))
+    }
+})
+
 app.put("/funcionario/:id",async function(req,res){
     const resultado = await funcionario.funcionario.update({
-        nome:req.body.nome
+        nome:req.body.nome,
+        idade:req.body.idade,
+        carga_horaria:req.body.carga_horaria,
+        salarioId:req.body.salarioId
     },{
         where:{id: req.params.id}
     })
@@ -110,19 +129,16 @@ app.put("/funcionario/:id",async function(req,res){
     }
 })
 
-app.put("/salario/:id",async function(req,res){
-    const resultado = await salario.salario.update({
-        funcao:req.body.funcao,
-        funcionarioId:req.body.funcionarioId,
-        valor:req.body.valor
-    },
-    {
-        where:{id: req.params.id}
+app.delete("/salario/:id",async function(req,res){
+    const resultado = await salario.salario.destroy({
+        where:{
+            id:req.params.id
+        }
     })
-    if( resultado == 0){
+    if( resultado == 0 ){
         res.status(404).send({})
     }else{
-        res.send( await atleta.atleta.findByPk(req.params.id))
+        res.status(204).send({})
     }
 })
 
@@ -139,15 +155,3 @@ app.delete("/funcionario/:id",async function(req,res){
     }
 })
 
-app.delete("/sakario/:id",async function(req,res){
-    const resultado = await salario.salario.destroy({
-        where:{
-            id:req.params.id
-        }
-    })
-    if( resultado == 0 ){
-        res.status(404).send({})
-    }else{
-        res.status(204).send({})
-    }
-})
